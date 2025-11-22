@@ -1,23 +1,31 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: Brokli Link Checker
+description:
+  Check for broken links in static sites before deployment using brokli CLI
+author: EndlessTrax
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
-  color: red
+  icon: link
+  color: blue
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  generator:
+    description: Static site generator to use (e.g., 'hugo')
     required: true
-    default: '1000'
+  drafts:
+    description: Include draft posts when checking links
+    required: false
+    default: 'false'
+  port:
+    description: Override default port for the static site server
+    required: false
+    default: ''
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  result:
+    description: Result of the broken link check
 
 runs:
   using: node24

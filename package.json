@@ -1,20 +1,25 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "name": "brokli-action",
+  "description": "GitHub Action to check for broken links in static sites using brokli CLI",
+  "version": "1.0.0",
+  "author": "EndlessTrax",
   "type": "module",
   "private": true,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/EndlessTrax/brokli-action",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/EndlessTrax/brokli-action.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/EndlessTrax/brokli-action/issues"
   },
   "keywords": [
-    "actions"
+    "actions",
+    "brokli",
+    "broken-links",
+    "link-checker",
+    "static-site",
+    "hugo"
   ],
   "exports": {
     ".": "./dist/index.js"
@@ -37,7 +42,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.11.1"
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1"
   },
   "devDependencies": {
     "@eslint/compat": "^1.4.0",

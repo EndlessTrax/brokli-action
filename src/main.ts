@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import { wait } from './wait.js'
+import * as exec from '@actions/exec'
 
 /**
  * The main function for the action.
@@ -8,20 +8,41 @@ import { wait } from './wait.js'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
+    const generator: string = core.getInput('generator', { required: true })
+    const drafts: string = core.getInput('drafts')
+    const port: string = core.getInput('port')
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    core.info(`Running brokli for ${generator} static site generator`)
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    // Build the brokli command
+    const args: string[] = [generator]
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    // Add optional flags
+    if (drafts === 'true') {
+      args.push('--drafts')
+      core.info('Including draft posts')
+    }
+
+    if (port) {
+      args.push('--port', port)
+      core.info(`Using port: ${port}`)
+    }
+
+    // Execute brokli command
+    const exitCode = await exec.exec('npx', ['brokli', ...args])
+
+    if (exitCode === 0) {
+      core.setOutput('result', 'success')
+      core.info('Brokli check completed successfully - no broken links found')
+    } else {
+      core.setFailed('Brokli check failed - broken links detected')
+      core.setOutput('result', 'failure')
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.setFailed(error.message)
+      core.setOutput('result', 'error')
+    }
   }
 }

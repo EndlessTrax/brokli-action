@@ -27253,19 +27253,7 @@ function requireCore () {
 
 var coreExports = requireCore();
 
-/**
- * Waits for a number of milliseconds.
- *
- * @param milliseconds The number of milliseconds to wait.
- * @returns Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise((resolve) => {
-        if (isNaN(milliseconds))
-            throw new Error('milliseconds is not a number');
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
-}
+var execExports = requireExec();
 
 /**
  * The main function for the action.
@@ -27274,20 +27262,38 @@ async function wait(milliseconds) {
  */
 async function run() {
     try {
-        const ms = coreExports.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        coreExports.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        coreExports.debug(new Date().toTimeString());
-        await wait(parseInt(ms, 10));
-        coreExports.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        coreExports.setOutput('time', new Date().toTimeString());
+        const generator = coreExports.getInput('generator', { required: true });
+        const drafts = coreExports.getInput('drafts');
+        const port = coreExports.getInput('port');
+        coreExports.info(`Running brokli for ${generator} static site generator`);
+        // Build the brokli command
+        const args = [generator];
+        // Add optional flags
+        if (drafts === 'true') {
+            args.push('--drafts');
+            coreExports.info('Including draft posts');
+        }
+        if (port) {
+            args.push('--port', port);
+            coreExports.info(`Using port: ${port}`);
+        }
+        // Execute brokli command
+        const exitCode = await execExports.exec('npx', ['brokli', ...args]);
+        if (exitCode === 0) {
+            coreExports.setOutput('result', 'success');
+            coreExports.info('Brokli check completed successfully - no broken links found');
+        }
+        else {
+            coreExports.setFailed('Brokli check failed - broken links detected');
+            coreExports.setOutput('result', 'failure');
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
+        if (error instanceof Error) {
             coreExports.setFailed(error.message);
+            coreExports.setOutput('result', 'error');
+        }
     }
 }
 
